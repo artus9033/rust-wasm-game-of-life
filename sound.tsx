@@ -42,10 +42,6 @@ export const MINOR_PENTATONIC = [
 	"C3",
 ];
 
-function isPowerOf2(x: number): boolean {
-	return x != 0 && !(x & (x - 1));
-}
-
 export function startSoundContext(bDisableLooping: boolean = true) {
 	if (bDisableLooping) Tone.Transport.loop = false;
 
@@ -58,22 +54,22 @@ export function useTonePlayer(soundDeltaSeconds: number, maxTones: number) {
 	const _synthRef = useRef<Tone.PolySynth | null>(null);
 
 	const { synth, maxTonesSqrt } = useMemo(() => {
-		if (!isPowerOf2(maxTones)) {
-			console.warn("[Sound] The supplied maxTones is not a power of 2 (which is required)!");
-		}
+		let justCreated = false;
 
-		if (_synthRef.current) {
-			_synthRef.current.dispose();
-		}
+		if (!_synthRef.current) {
+			_synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
+				volume: -32,
+				portamento: 0.005,
+			});
 
-		_synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
-			volume: -32,
-			portamento: 0.005,
-		});
+			justCreated = true;
+		}
 
 		_synthRef.current.maxPolyphony = maxTones;
 
-		_synthRef.current.toDestination();
+		if (justCreated) {
+			_synthRef.current.toDestination();
+		}
 
 		return { synth: _synthRef.current, maxTonesSqrt: Math.round(Math.sqrt(maxTones)) };
 	}, [maxTones]);

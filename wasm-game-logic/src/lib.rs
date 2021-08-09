@@ -46,6 +46,10 @@ pub fn init() {
         console_log(&*format_log(
             "Running in debug mode - enabling console_error_panic_hook",
         ));
+    } else {
+        console_log(&*format_log(
+            "Running in production mode with stripped std & no console_error_panic_hook",
+        ));
     }
 }
 

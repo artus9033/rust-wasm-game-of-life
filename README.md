@@ -5,10 +5,14 @@ This package is a code extract from a part of [my website](https://artus9033.now
 The submodule that can be plugged in to any React project. Particularly, this has one is used ina Next.js project. The dependencies here are omitted, as they should belong to the project's `package.json` and the purpose of this repository is solely to provide the implementation code. The main dependencies needed are:
 
 -   `React`
--   `lodash`
--   `tone`
--   `THREE.js`
--   `@react-three/fiber`
+-   `lodash` for utils
+-   `tone` for sound synthesization
+-   `THREE.js` for rendering
+-   `@react-three/fiber` for declarative Three.js scene definitions
+-   `stats.js` for rendering FPS & memory stats
+-   `leva` for GUI
+-   `@material-ui/core@next` for layout components
+-   `@material-ui/styles@next` for styling
 
 ## Why is this implementation special?
 
@@ -20,7 +24,9 @@ Lastly, this implementation features a dynamic, weighted-pseudorandom map (unive
 
 ## How does this work?
 
-Everything is described on [the GoL page on my website](https://artus9033.now.sh/game-of-life).
+`Arena.tsx` is the main entrypoint that wraps the whole scene, GUI & other components. `Cells.tsx` contain `instancedMesh`es representing cell, `sound.tsx` contains tone generation hooks, `SoundGridVisualizer.tsx` visualizes the notes assigned to sound grid cells in a table, while `Stats.tsx` wrap `stats.js` to mount them into the DOM.
+
+Technical details is described on [the GoL page on my website](https://artus9033.now.sh/game-of-life).
 
 ## License
 

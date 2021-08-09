@@ -1,3 +1,4 @@
+import { Leva, useControls } from "leva";
 import _ from "lodash";
 import { useSnackbar } from "notistack5";
 import React, { RefObject, memo, useEffect, useRef, useState } from "react";
@@ -18,11 +19,12 @@ import { startSoundContext } from "./sound";
 export type ArenaProps = {
 	darkMode: boolean;
 	containerRef: RefObject<HTMLElement>;
-	roundDeltaSeconds?: number;
-	soundDeltaSeconds?: number;
-	maxTones?: number;
+	roundDeltaSecondsDefault?: number;
+	soundDeltaSecondsDefault?: number;
+	maxTonesDefault?: number;
 	motionAnimStaggered?: boolean;
 	soundGridVisualizerRef?: RefObject<typeof SoundGridVisualizer | null>;
+	gui?: boolean;
 } & (
 	| {
 			stats: true;
@@ -40,14 +42,38 @@ const Arena = memo(
 		containerRef,
 		stats = false,
 		statsClassName,
-		roundDeltaSeconds = 1 / 8,
-		soundDeltaSeconds = 1 / 1.5,
-		maxTones = 8,
+		roundDeltaSecondsDefault = 1 / 8,
+		soundDeltaSecondsDefault = 0.9,
+		maxTonesDefault = 8,
 		motionAnimStaggered = false,
 		soundGridVisualizerRef,
+		gui = false,
 	}: ArenaProps) => {
 		const windowSize = useWindowSize();
 		const { enqueueSnackbar } = useSnackbar();
+
+		const { roundDeltaSeconds } = useControls("Game logic", {
+			roundDeltaSeconds: {
+				value: roundDeltaSecondsDefault,
+				min: 0,
+				max: 2,
+				suffix: "s",
+			},
+		});
+
+		const { soundDeltaSeconds, maxTones } = useControls("Sound synthesization", {
+			soundDeltaSeconds: {
+				value: soundDeltaSecondsDefault,
+				min: 0.4,
+				max: 2,
+				suffix: "s",
+			},
+			maxTones: {
+				value: maxTonesDefault,
+				min: 0,
+				max: 32,
+			},
+		});
 
 		const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -133,6 +159,22 @@ const Arena = memo(
 					}
 				}}
 			>
+				<Leva
+					titleBar={{
+						title: "Game of Life parameters",
+					}}
+					theme={{
+						sizes: {
+							rootWidth: `${Math.min(
+								Math.round((windowSize.width ?? 100) * 0.9),
+								360
+							)}px`,
+							numberInputMinWidth: "50px",
+						},
+					}}
+					hidden={!gui}
+				/>
+
 				<MotionFader key={aspect} staggered={motionAnimStaggered}>
 					<Canvas
 						style={{
