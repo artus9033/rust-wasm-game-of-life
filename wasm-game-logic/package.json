@@ -1,0 +1,11 @@
+{
+	"name": "wasm-game-logic-builder",
+	"version": "1.0.0",
+	"description": "This is just a helper script that builds the compiles Rust package to WASM, a JS wrapper for it, type definitions & a package.json - all in pkg/",
+	"scripts": {
+		"prod": "wasm-pack build",
+		"dev": "wasm-pack build -- --features \"debug\""
+	},
+	"author": "artus9033",
+	"license": "MIT"
+}
