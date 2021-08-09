@@ -16,6 +16,8 @@ Firstly, this implementation defines the Three.js scene declaratively with React
 
 Secondly, it provides a polyphonic sound synthesization algorithm that plays background music generated based on the current contents of the map (universe).
 
+Lastly, this implementation features a dynamic, weighted-pseudorandom map (universe) generation for a specified canvas size - everything in Rust.
+
 ## How does this work?
 
 Everything is described on [the GoL page on my website](https://artus9033.now.sh/game-of-life).
