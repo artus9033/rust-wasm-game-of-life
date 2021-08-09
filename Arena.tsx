@@ -1,7 +1,7 @@
 import { Leva, useControls } from "leva";
 import _ from "lodash";
 import { useSnackbar } from "notistack5";
-import React, { RefObject, memo, useEffect, useRef, useState } from "react";
+import React, { RefObject, memo, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import * as Tone from "tone";
 
@@ -52,7 +52,7 @@ const Arena = memo(
 		const windowSize = useWindowSize();
 		const { enqueueSnackbar } = useSnackbar();
 
-		const { roundDeltaSeconds } = useControls("Game logic", {
+		const { roundDeltaSeconds: roundDeltaSecondsSuffixed } = useControls("Game logic", {
 			roundDeltaSeconds: {
 				value: roundDeltaSecondsDefault,
 				min: 0,
@@ -61,19 +61,32 @@ const Arena = memo(
 			},
 		});
 
-		const { soundDeltaSeconds, maxTones } = useControls("Sound synthesization", {
-			soundDeltaSeconds: {
-				value: soundDeltaSecondsDefault,
-				min: 0.4,
-				max: 2,
-				suffix: "s",
-			},
-			maxTones: {
-				value: maxTonesDefault,
-				min: 0,
-				max: 32,
-			},
-		});
+		const roundDeltaSeconds = useMemo(
+			() => Number(String(roundDeltaSecondsSuffixed).replace("s", "")),
+			[roundDeltaSecondsSuffixed]
+		);
+
+		const { soundDeltaSeconds: soundDeltaSecondsSuffixed, maxTones } = useControls(
+			"Sound synthesization",
+			{
+				soundDeltaSeconds: {
+					value: soundDeltaSecondsDefault,
+					min: 0.4,
+					max: 2,
+					suffix: "s",
+				},
+				maxTones: {
+					value: maxTonesDefault,
+					min: 0,
+					max: 32,
+				},
+			}
+		);
+
+		const soundDeltaSeconds = useMemo(
+			() => Number(String(soundDeltaSecondsSuffixed).replace("s", "")),
+			[soundDeltaSecondsSuffixed]
+		);
 
 		const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
