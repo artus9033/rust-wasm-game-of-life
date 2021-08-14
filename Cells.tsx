@@ -2,6 +2,7 @@ import _ from "lodash";
 import dynamic from "next/dynamic";
 import React, { RefObject, memo, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { Frequency } from "tone/build/esm/core/type/Units";
 import type WasmGameLogicType from "wasm-game-logic/wasm_game_logic";
 
 import { useFrame } from "@react-three/fiber";
@@ -58,6 +59,7 @@ const DynamicCells = dynamic(
 					const vanishingCells = useRef<THREE.InstancedMesh>(null!);
 					const soundClockBuffer = useRef<number>(0);
 					const roundClockBuffer = useRef<number>(0);
+					const soundGridRef = useRef<Array<Array<Frequency>> | undefined>(undefined);
 
 					const transform = useMemo(() => new THREE.Matrix4(), []);
 
@@ -86,11 +88,11 @@ const DynamicCells = dynamic(
 							soundClockBuffer.current += delta;
 
 							if (soundClockBuffer.current >= soundDeltaSeconds) {
-								const soundGrid = playTone(map.current);
+								soundGridRef.current = playTone(map.current);
 
-								if (soundGrid)
+								if (soundGridRef.current)
 									(soundGridVisualizerRef?.current as any)?.updateNotesGrid(
-										soundGrid
+										soundGridRef.current
 									);
 
 								soundClockBuffer.current = 0;

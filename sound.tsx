@@ -53,7 +53,7 @@ export function startSoundContext(bDisableLooping: boolean = true) {
 export function useTonePlayer(soundDeltaSeconds: number, maxTones: number) {
 	const _synthRef = useRef<Tone.PolySynth | null>(null);
 
-	const { synth, maxTonesSqrt } = useMemo(() => {
+	const synth = useMemo(() => {
 		let justCreated = false;
 
 		if (!_synthRef.current) {
@@ -71,13 +71,18 @@ export function useTonePlayer(soundDeltaSeconds: number, maxTones: number) {
 			_synthRef.current.toDestination();
 		}
 
-		return { synth: _synthRef.current, maxTonesSqrt: Math.round(Math.sqrt(maxTones)) };
+		return _synthRef.current;
 	}, [maxTones]);
 
 	return (map: WasmGameLogicType.Map) => {
 		if (!synth.disposed) {
-			const musicGridSizeX = Math.round(map.width / maxTonesSqrt),
-				musicGridSizeY = Math.round(map.height / maxTonesSqrt);
+			const proportion = map.width / map.height;
+
+			const nCells = Math.min(maxTones, Math.round(Math.sqrt(proportion * maxTones))),
+				musicGridSizeX = Math.round(map.width / nCells);
+
+			const nRows = Math.ceil((maxTones + musicGridSizeX - 1) / musicGridSizeX),
+				musicGridSizeY = Math.round(map.height / nRows);
 
 			const notesGrid: Array<Array<Frequency>> = [];
 

@@ -35,7 +35,7 @@ extern "C" {
 pub fn init() {
     if cfg!(feature = "debug") {
         // When the `console_error_panic_hook` feature is enabled, we can call the
-        // `set_panictarget_heightook` function at least once during initialization, and then
+        // `console_error_panic_hook` function at least once during initialization, and then
         // we will get better error messages if our code ever panics.
         //
         // For more details see
@@ -91,7 +91,6 @@ impl Map {
         let mut map: CellsMatrix2D =
             vec![vec![Cell::Dead; map_width as usize]; map_height as usize];
 
-        // let occupied_cell_indices: { [_gy: number]: { [_gx: number]: true } | undefined } = {};
         let mut occupied_cell_indices: HashMap<(usize, usize), bool> = HashMap::new();
         for gx in 0..grid_cells_x {
             for gy in 0..grid_cells_y {
