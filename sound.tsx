@@ -86,10 +86,10 @@ export function useTonePlayer(soundDeltaSeconds: number, maxTones: number) {
 
 			const notesGrid: Array<Array<Frequency>> = [];
 
-			for (let gy = 0; gy * musicGridSizeY < map.height; gy++) {
+			for (let gy = 0; gy < nRows; gy++) {
 				const notesThisRow: Frequency[] = [];
 
-				for (let gx = 0; gx * musicGridSizeX < map.width; gx++) {
+				for (let gx = 0; gx < nCells; gx++) {
 					const sum = map.current_map_subgrid_sum(gx, gy, musicGridSizeX, musicGridSizeY);
 
 					if (sum) {
