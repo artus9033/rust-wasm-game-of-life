@@ -134,7 +134,7 @@ const Arena = memo(
 			}
 
 			return aspectVal;
-		}, []);
+		}, [windowSize]);
 
 		useEffect(
 			() => {
