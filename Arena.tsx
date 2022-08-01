@@ -126,11 +126,15 @@ const Arena = memo(
 			return () => window.removeEventListener("resize", updateSize);
 		}, []);
 
-		let aspect = (windowSize?.width ?? 1) / (windowSize?.height ?? 1);
+		const aspect = useMemo(() => {
+			let aspectVal = (windowSize?.width ?? 1) / (windowSize?.height ?? 1);
 
-		if (aspect < 1) {
-			aspect = 1 / aspect;
-		}
+			if (aspectVal < 1) {
+				aspectVal = 1 / aspectVal;
+			}
+
+			return aspectVal;
+		}, []);
 
 		useEffect(
 			() => {

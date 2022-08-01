@@ -56,9 +56,9 @@ class SoundGridVisualizer extends React.Component<
 						<TableHead>
 							<TableRow>
 								<TableCell />
-								{this.state.notesGrid?.map((_row, colIndex) => (
+								{this.state.notesGrid?.[0]?.map((_row, colIndex) => (
 									<TableCell key={colIndex} align="center">
-										<b>Col #{colIndex}</b>
+										<b>Col #{colIndex + 1}</b>
 									</TableCell>
 								))}
 							</TableRow>
@@ -67,7 +67,7 @@ class SoundGridVisualizer extends React.Component<
 							{this.state.notesGrid?.map((row, rowIndex) => (
 								<TableRow key={rowIndex}>
 									<TableCell align="center">
-										<b>Row #{rowIndex}</b>
+										<b>Row #{rowIndex + 1}</b>
 									</TableCell>
 									{row.map((note, colIndex) => {
 										const freqColor = synthesizeFreq(note);
@@ -77,10 +77,9 @@ class SoundGridVisualizer extends React.Component<
 												key={colIndex}
 												align="center"
 												style={{
-													color: (this.props
-														.theme as Theme).palette.getContrastText(
-														freqColor
-													),
+													color: (
+														this.props.theme as Theme
+													).palette.getContrastText(freqColor),
 													backgroundColor: freqColor,
 												}}
 											>
