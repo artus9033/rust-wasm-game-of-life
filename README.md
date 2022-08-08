@@ -11,8 +11,7 @@ The submodule that can be plugged in to any React project. Particularly, this ha
 -   `@react-three/fiber` for declarative Three.js scene definitions
 -   `stats.js` for rendering FPS & memory stats
 -   `leva` for GUI
--   `@material-ui/core@next` for layout components
--   `@material-ui/styles@next` for styling
+-   `@mui/material` for components & color definitions
 
 ## Why is this implementation special?
 
