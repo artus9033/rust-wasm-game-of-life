@@ -12,14 +12,14 @@ import {
 	TableHead,
 	TableRow,
 	Theme,
-} from "@material-ui/core";
-import { WithStyles, createStyles, withStyles } from "@material-ui/styles";
+	useTheme,
+} from "@mui/material";
 
 import { synthesizeFreq } from "./chromestesia";
 
-const styles = createStyles({});
-
-type SoundGridVisualizerProps = WithStyles<typeof styles, true>;
+type SoundGridVisualizerProps = {
+	theme: Theme;
+};
 
 type SoundGridVisualizerState = {
 	notesGrid: Array<Array<Frequency>> | null;
@@ -29,7 +29,7 @@ const CustomContainer = ({ children }: { children: React.ReactNode }) => (
 	<Container>{children}</Container>
 );
 
-class SoundGridVisualizer extends React.Component<
+class SoundGridVisualizerRaw extends React.Component<
 	SoundGridVisualizerProps,
 	SoundGridVisualizerState
 > {
@@ -97,4 +97,12 @@ class SoundGridVisualizer extends React.Component<
 	}
 }
 
-export default withStyles(styles, { withTheme: true })(SoundGridVisualizer);
+const WithThemeSoundGridVisualizer = React.forwardRef<SoundGridVisualizerRaw>((props, ref) => {
+	const theme = useTheme();
+
+	return <SoundGridVisualizerRaw theme={theme} ref={ref} />;
+});
+
+export const SoundGridVisualizer = WithThemeSoundGridVisualizer;
+
+export default SoundGridVisualizer;

@@ -1,6 +1,6 @@
 import { Leva, useControls } from "leva";
 import _ from "lodash";
-import { useSnackbar } from "notistack5";
+import { useSnackbar } from "notistack";
 import React, { RefObject, memo, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import * as Tone from "tone";
@@ -136,13 +136,17 @@ const Arena = memo(
 			return aspectVal;
 		}, [windowSize]);
 
+		const mountClickForSoundFlagRef = useRef<boolean>(false); // fix for react strict mode multiple runs of the below on mount useEffect
+
 		useEffect(
 			() => {
-				if (Tone.Transport.state !== "started") {
+				if (Tone.Transport.state !== "started" && !mountClickForSoundFlagRef.current) {
 					enqueueSnackbar("Click the game to enable sound", {
 						variant: "info",
 						autoHideDuration: 7000,
 					});
+
+					mountClickForSoundFlagRef.current = true;
 				}
 			},
 			// on mount effect

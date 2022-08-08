@@ -1,6 +1,6 @@
 import type { Frequency } from "tone/build/esm/core/type/Units";
 
-import { blue, deepOrange, green, lightBlue, orange, red, yellow } from "@material-ui/core/colors";
+import { blue, deepOrange, green, lightBlue, orange, red, yellow } from "@mui/material/colors";
 
 export function synthesizeFreq(freq: Frequency): string {
 	let noteStr = String(freq),
