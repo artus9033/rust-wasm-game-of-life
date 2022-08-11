@@ -1,11 +1,14 @@
-import { Leva, useControls } from "leva";
-import _ from "lodash";
-import { useSnackbar } from "notistack";
 import React, { RefObject, memo, useEffect, useMemo, useRef, useState } from "react";
-import * as THREE from "three";
-import * as Tone from "tone";
+import _ from "lodash";
 
+import { useMediaQuery, useTheme } from "@mui/material";
+import { useSnackbar } from "notistack";
+
+import { Leva, useControls } from "leva";
+import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
+
+import * as Tone from "tone";
 
 import MotionFader from "../components/animations/MotionFader";
 import useIsomorphicLayoutEffect from "../hooks/useIsomorphicLayoutEffect";
@@ -51,6 +54,8 @@ const Arena = memo(
 	}: ArenaProps) => {
 		const windowSize = useWindowSize();
 		const { enqueueSnackbar } = useSnackbar();
+		const theme = useTheme();
+		const isSmartphoneSize = useMediaQuery(theme.breakpoints.down("md")); // this is exclusive for the key itself
 
 		const { roundDeltaSeconds: roundDeltaSecondsSuffixed } = useControls("Game logic", {
 			roundDeltaSeconds: {
@@ -95,6 +100,10 @@ const Arena = memo(
 			width: undefined,
 			height: undefined,
 		});
+		const [levaPosition, setLevaPosition] = useState<{ x?: number; y?: number }>({
+			x: undefined,
+			y: undefined,
+		});
 
 		useIsomorphicLayoutEffect(() => {
 			function updateSize() {
@@ -126,6 +135,18 @@ const Arena = memo(
 			return () => window.removeEventListener("resize", updateSize);
 		}, []);
 
+		useEffect(
+			_.debounce(() => {
+				if (windowSize.width !== undefined) {
+					setLevaPosition({
+						x: isSmartphoneSize ? -windowSize.width / 2 + levaPanelWidth / 2 + 15 : -15,
+						y: isSmartphoneSize ? 0 : 100,
+					});
+				}
+			}, 1000),
+			[windowSize, isSmartphoneSize]
+		);
+
 		const aspect = useMemo(() => {
 			let aspectVal = (windowSize?.width ?? 1) / (windowSize?.height ?? 1);
 
@@ -135,6 +156,11 @@ const Arena = memo(
 
 			return aspectVal;
 		}, [windowSize]);
+
+		const levaPanelWidth = useMemo(
+			() => Math.min(Math.round((windowSize.width ?? 100) * 0.9), 360),
+			[windowSize.width]
+		);
 
 		const mountClickForSoundFlagRef = useRef<boolean>(false); // fix for react strict mode multiple runs of the below on mount useEffect
 
@@ -181,15 +207,19 @@ const Arena = memo(
 				}}
 			>
 				<Leva
+					// this is just the starting prop, despite the name - the component is uncontrolled after mount
+					key={`leva-gol-gui-${isSmartphoneSize}`}
+					collapsed={isSmartphoneSize}
 					titleBar={{
 						title: "Game of Life parameters",
+						position: levaPosition,
+						onDrag: (position) => {
+							setLevaPosition(position);
+						},
 					}}
 					theme={{
 						sizes: {
-							rootWidth: `${Math.min(
-								Math.round((windowSize.width ?? 100) * 0.9),
-								360
-							)}px`,
+							rootWidth: `${levaPanelWidth}px`,
 							numberInputMinWidth: "50px",
 						},
 					}}
