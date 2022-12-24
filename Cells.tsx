@@ -24,6 +24,7 @@ export type CellsProps = {
 	soundDeltaSeconds: number;
 	maxTones: number;
 	soundGridVisualizerRef?: RefObject<typeof SoundGridVisualizer | null>;
+	regenerateMapFlag?: string; // when this prop changes, the map will be re-generated
 };
 
 function updateTransform(transform: THREE.Matrix4, x: number, y: number, size: Size2D): void {
@@ -49,6 +50,7 @@ const DynamicCells = dynamic(
 					soundDeltaSeconds,
 					maxTones,
 					soundGridVisualizerRef,
+					regenerateMapFlag = "",
 				}: CellsProps) => {
 					const playTone = useTonePlayer(soundDeltaSeconds, maxTones);
 
@@ -60,6 +62,7 @@ const DynamicCells = dynamic(
 					const soundClockBuffer = useRef<number>(0);
 					const roundClockBuffer = useRef<number>(0);
 					const soundGridRef = useRef<Array<Array<Frequency>> | undefined>(undefined);
+					const lastregenerateMapFlagRef = useRef<string>("");
 
 					const transform = useMemo(() => new THREE.Matrix4(), []);
 
@@ -76,12 +79,18 @@ const DynamicCells = dynamic(
 						console.log("[Game of Life - Arena] Detected canvas size:", width, height);
 
 						if (width !== undefined && height !== undefined) {
-							if (!map.current)
+							if (
+								!map.current ||
+								regenerateMapFlag !== lastregenerateMapFlagRef.current
+							) {
 								map.current = wasmGameLogic.Map.generate(width, height);
+
+								lastregenerateMapFlagRef.current = regenerateMapFlag;
+							}
 
 							setReRenderFlag(_.uniqueId()); // without this, everything fucks up
 						}
-					}, [canvasSize]);
+					}, [canvasSize, regenerateMapFlag]);
 
 					useFrame((_state, delta) => {
 						if (map.current) {

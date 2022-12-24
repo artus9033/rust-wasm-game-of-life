@@ -1,14 +1,12 @@
-import React, { RefObject, memo, useEffect, useMemo, useRef, useState } from "react";
+import { Leva, button, useControls } from "leva";
 import _ from "lodash";
+import { useSnackbar } from "notistack";
+import React, { RefObject, memo, useEffect, useMemo, useRef, useState } from "react";
+import * as THREE from "three";
+import * as Tone from "tone";
 
 import { useMediaQuery, useTheme } from "@mui/material";
-import { useSnackbar } from "notistack";
-
-import { Leva, useControls } from "leva";
-import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-
-import * as Tone from "tone";
 
 import MotionFader from "../components/animations/MotionFader";
 import useIsomorphicLayoutEffect from "../hooks/useIsomorphicLayoutEffect";
@@ -57,35 +55,54 @@ const Arena = memo(
 		const theme = useTheme();
 		const isSmartphoneSize = useMediaQuery(theme.breakpoints.down("md")); // this is exclusive for the key itself
 
-		const { roundDeltaSeconds: roundDeltaSecondsSuffixed } = useControls("Game logic", {
-			roundDeltaSeconds: {
-				value: roundDeltaSecondsDefault,
-				min: 0,
-				max: 2,
-				suffix: "s",
+		const { "Round period (seconds)": roundDeltaSecondsSuffixed } = useControls(
+			"Game logic",
+			{
+				"Round period (seconds)": {
+					value: roundDeltaSecondsDefault,
+					min: 0,
+					max: 2,
+					suffix: "s",
+				},
 			},
-		});
+			{ order: 1 }
+		);
 
 		const roundDeltaSeconds = useMemo(
 			() => Number(String(roundDeltaSecondsSuffixed).replace("s", "")),
 			[roundDeltaSecondsSuffixed]
 		);
 
-		const { soundDeltaSeconds: soundDeltaSecondsSuffixed, maxTones } = useControls(
+		const {
+			"Sound period (seconds)": soundDeltaSecondsSuffixed,
+			"Max polyphonic tones": maxTones,
+		} = useControls(
 			"Sound synthesization",
 			{
-				soundDeltaSeconds: {
+				"Sound period (seconds)": {
 					value: soundDeltaSecondsDefault,
 					min: 0.4,
 					max: 2,
 					suffix: "s",
 				},
-				maxTones: {
+				"Max polyphonic tones": {
 					value: maxTonesDefault,
 					min: 0,
 					max: 32,
+					step: 1,
 				},
-			}
+			},
+			{ order: 2 }
+		);
+
+		useControls(
+			"Map controls",
+			{
+				"Regenerate map!": button(() => {
+					setRegenerateMapFlag(_.uniqueId());
+				}),
+			},
+			{ order: 3 }
 		);
 
 		const soundDeltaSeconds = useMemo(
@@ -96,6 +113,7 @@ const Arena = memo(
 		const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
 		const [reRenderFlag, setReRenderFlag] = useState<boolean>(false);
+		const [regenerateMapFlag, setRegenerateMapFlag] = useState<string>(_.uniqueId());
 		const [canvasSize, setCanvasSize] = useState<{ width?: number; height?: number }>({
 			width: undefined,
 			height: undefined,
@@ -246,6 +264,7 @@ const Arena = memo(
 						/>
 
 						<Cells
+							regenerateMapFlag={regenerateMapFlag}
 							roundDeltaSeconds={roundDeltaSeconds}
 							soundDeltaSeconds={soundDeltaSeconds}
 							maxTones={maxTones}
