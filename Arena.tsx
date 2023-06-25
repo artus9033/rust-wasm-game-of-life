@@ -204,6 +204,7 @@ const Arena = memo(
 					position: "relative",
 					height: "70vh",
 					cursor: Tone.Transport.state === "started" ? undefined : "pointer",
+					width: "100%",
 				}}
 				onClick={() => {
 					if (Tone.Transport.state !== "started") {
