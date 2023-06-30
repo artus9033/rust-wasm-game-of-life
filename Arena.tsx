@@ -5,7 +5,7 @@ import React, { RefObject, memo, useEffect, useMemo, useRef, useState } from "re
 import * as THREE from "three";
 import * as Tone from "tone";
 
-import { useMediaQuery, useTheme } from "@mui/material";
+import { CircularProgress, Grid, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { Canvas } from "@react-three/fiber";
 
 import MotionFader from "../components/animations/MotionFader";
@@ -113,6 +113,7 @@ const Arena = memo(
 		const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
 		const [reRenderFlag, setReRenderFlag] = useState<boolean>(false);
+		const [isWASMReady, setIsWASMReady] = useState<boolean>(false);
 		const [regenerateMapFlag, setRegenerateMapFlag] = useState<string>(_.uniqueId());
 		const [canvasSize, setCanvasSize] = useState<{ width?: number; height?: number }>({
 			width: undefined,
@@ -153,6 +154,7 @@ const Arena = memo(
 			return () => window.removeEventListener("resize", updateSize);
 		}, []);
 
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 		useEffect(
 			_.debounce(() => {
 				if (windowSize.width !== undefined) {
@@ -196,6 +198,20 @@ const Arena = memo(
 			// on mount effect
 			// eslint-disable-next-line react-hooks/exhaustive-deps
 			[]
+		);
+
+		// keep this always rendered, but mount in different place while loading
+		const cells = (
+			<Cells
+				regenerateMapFlag={regenerateMapFlag}
+				roundDeltaSeconds={roundDeltaSeconds}
+				soundDeltaSeconds={soundDeltaSeconds}
+				maxTones={maxTones}
+				canvasSize={canvasSize}
+				darkMode={darkMode}
+				soundGridVisualizerRef={soundGridVisualizerRef}
+				setIsWASMReady={setIsWASMReady}
+			/>
 		);
 
 		return (
@@ -264,18 +280,30 @@ const Arena = memo(
 							args={[darkMode ? threeColorBlack : threeColorWhite]}
 						/>
 
-						<Cells
-							regenerateMapFlag={regenerateMapFlag}
-							roundDeltaSeconds={roundDeltaSeconds}
-							soundDeltaSeconds={soundDeltaSeconds}
-							maxTones={maxTones}
-							canvasSize={canvasSize}
-							darkMode={darkMode}
-							soundGridVisualizerRef={soundGridVisualizerRef}
-						/>
+						{cells}
 
 						{!!stats && <Stats parent={containerRef} className={statsClassName} />}
 					</Canvas>
+
+					{!isWASMReady && (
+						<Grid
+							justifyContent="center"
+							container
+							direction="column"
+							display="flex"
+							style={{
+								position: "relative",
+								height: "70vh",
+								width: "100%",
+							}}
+						>
+							<CircularProgress style={{ alignSelf: "center" }} size="3.5rem" />
+
+							<Typography variant="h6" style={{ alignSelf: "center" }}>
+								Loading...
+							</Typography>
+						</Grid>
+					)}
 				</MotionFader>
 			</div>
 		);
