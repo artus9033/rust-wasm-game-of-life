@@ -33,7 +33,7 @@ function updateTransform(transform: THREE.Matrix4, x: number, y: number, size: S
 	transform.setPosition(
 		x * CANVAS_UNIT - ((size?.width ?? 0) * CANVAS_UNIT) / 2,
 		y * CANVAS_UNIT - ((size?.height ?? 0) * CANVAS_UNIT) / 2,
-		0
+		0,
 	);
 }
 
@@ -63,13 +63,22 @@ const Cells = memo(
 
 		useOnMountOnce(() => {
 			(async () => {
-				setWASMGameLogic(await import("wasm-game-logic/wasm_game_logic"));
+				setWASMGameLogic(await import("wasm-game-logic/wasm_game_logic.js"));
 
 				setIsWASMReady(true);
 			})();
 		});
 
 		const transform = useMemo(() => new THREE.Matrix4(), []);
+		const boxGeometry = useMemo(
+			() =>
+				new THREE.BoxGeometry(
+					CANVAS_UNIT * CANVAS_UNIT_SIZE_SCALE,
+					CANVAS_UNIT * CANVAS_UNIT_SIZE_SCALE,
+					(CANVAS_UNIT * CANVAS_UNIT_SIZE_SCALE) / 3,
+				),
+			[],
+		);
 
 		// initialize on new WASM game logic instance
 		useEffect(() => {
@@ -102,7 +111,7 @@ const Cells = memo(
 
 					if (soundGridRef.current)
 						(soundGridVisualizerRef?.current as any)?.updateNotesGrid(
-							soundGridRef.current
+							soundGridRef.current,
 						);
 
 					soundClockBuffer.current = 0;
@@ -160,13 +169,7 @@ const Cells = memo(
 		return map.current ? (
 			<React.Fragment>
 				<instancedMesh ref={livingCells} args={[null!, null!, 10000]}>
-					<boxBufferGeometry
-						args={[
-							CANVAS_UNIT * CANVAS_UNIT_SIZE_SCALE,
-							CANVAS_UNIT * CANVAS_UNIT_SIZE_SCALE,
-							(CANVAS_UNIT * CANVAS_UNIT_SIZE_SCALE) / 3,
-						]}
-					/>
+					<primitive object={boxGeometry} />
 					<meshBasicMaterial
 						color={darkMode ? threeColorWhite : threeColorBlack}
 						shadowSide={THREE.DoubleSide}
@@ -176,13 +179,7 @@ const Cells = memo(
 					/>
 				</instancedMesh>
 				<instancedMesh ref={vanishingCells} args={[null!, null!, 10000]}>
-					<boxBufferGeometry
-						args={[
-							CANVAS_UNIT * CANVAS_UNIT_SIZE_SCALE,
-							CANVAS_UNIT * CANVAS_UNIT_SIZE_SCALE,
-							(CANVAS_UNIT * CANVAS_UNIT_SIZE_SCALE) / 3,
-						]}
-					/>
+					<primitive object={boxGeometry} />
 					<meshBasicMaterial
 						color={darkMode ? threeColorWhite : threeColorBlack}
 						shadowSide={THREE.DoubleSide}
@@ -193,7 +190,7 @@ const Cells = memo(
 				</instancedMesh>
 			</React.Fragment>
 		) : null;
-	}
+	},
 );
 
 Cells.displayName = "Cells";
