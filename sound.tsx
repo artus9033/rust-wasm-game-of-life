@@ -50,7 +50,7 @@ export function startSoundContext(bDisableLooping: boolean = true) {
 	}
 }
 
-export function useTonePlayer(soundDeltaSeconds: number, maxTones: number) {
+export function useTonePlayer(maxTones: number, soundEnabled: boolean) {
 	const _synthRef = useRef<Tone.PolySynth | null>(null);
 
 	const synth = useMemo(() => {
@@ -74,7 +74,9 @@ export function useTonePlayer(soundDeltaSeconds: number, maxTones: number) {
 		return _synthRef.current;
 	}, [maxTones]);
 
-	return (map: WasmGameLogicType.Map) => {
+	return (map: WasmGameLogicType.Map, notesDuration: number) => {
+		if (!soundEnabled) return;
+
 		if (!synth.disposed) {
 			const proportion = map.width / map.height;
 
@@ -108,7 +110,7 @@ export function useTonePlayer(soundDeltaSeconds: number, maxTones: number) {
 			}
 
 			if (Tone.Transport.state === "started") {
-				synth.triggerAttackRelease(notesGrid.flat(), soundDeltaSeconds);
+				synth.triggerAttackRelease(notesGrid.flat(), notesDuration, Tone.now(), 1);
 			}
 
 			return notesGrid;
