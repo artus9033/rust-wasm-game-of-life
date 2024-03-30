@@ -6,10 +6,9 @@ mod utils;
 use wasm_bindgen::prelude::*;
 
 use gol_patterns::*;
-use types::*;
-
 use rand::Rng;
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap};
+use types::*;
 
 fn tagged_console_log(s: &str) -> String {
     let mut buffer = constants::LOG_TAG.to_owned();
@@ -54,6 +53,10 @@ pub struct Map {
     pub height: usize,
     map: CellsPackedArr,
     previous_map: CellsPackedArr,
+    js_cells_instanced_mesh: RefCell<JsValue>,
+    set_cells_im_matrix_color_at: js_sys::Function,
+    cells_im_matrix_instance_color: JsValue,
+    cell_color_lut: RefCell<JsValue>,
 }
 
 #[wasm_bindgen]
@@ -77,6 +80,10 @@ impl Map {
             height: map_height,
             previous_map: map_cells.clone(),
             map: map_cells.clone(),
+            js_cells_instanced_mesh: RefCell::new(JsValue::undefined()),
+            set_cells_im_matrix_color_at: js_sys::Function::default(),
+            cells_im_matrix_instance_color: JsValue::undefined(),
+            cell_color_lut: RefCell::new(JsValue::undefined()), // update_cells: Function::default()
         };
 
         map.regenerate(num_cell_divisions_x, num_cell_divisions_y);
@@ -84,7 +91,11 @@ impl Map {
         map
     }
 
-    pub fn regenerate(&mut self, num_cell_divisions_x: Option<usize>, num_cell_divisions_y: Option<usize>) {
+    pub fn regenerate(
+        &mut self,
+        num_cell_divisions_x: Option<usize>,
+        num_cell_divisions_y: Option<usize>,
+    ) {
         let mut rng = rand::thread_rng();
 
         let grid_cell_width = utils::max(
@@ -106,6 +117,10 @@ impl Map {
 
         self.map.fill(Cell::Dead as u8);
 
+        let mut generated_entities_stats: HashMap<Box<str>, usize> = PATTERNS
+            .iter()
+            .map(|pattern| (pattern.name.clone(), 1))
+            .collect::<HashMap<_, _>>();
         let mut occupied_cell_indices: HashMap<(usize, usize), bool> = HashMap::new();
         for gx in 0..grid_cells_x {
             for gy in 0..grid_cells_y {
@@ -170,15 +185,69 @@ impl Map {
 
                         for local_x in 0..target_width {
                             for local_y in 0..target_height {
-                                let index = self.get_index_for_coordinates(y + local_y, x + local_x);
+                                let index =
+                                    self.get_index_for_coordinates(y + local_y, x + local_x);
 
                                 self.map[index] = pattern.cells[local_y][local_x];
                             }
                         }
+
+                        *generated_entities_stats.get_mut(&pattern.name).unwrap() += 1;
                     }
                 }
             }
         }
+
+        tagged_console_log("Map has been regenerated using the following entities:\n");
+
+        for pattern in PATTERNS.iter() {
+            let mut log_string: String = "".to_owned();
+
+            let name = &*pattern.name;
+            log_string.push_str(
+                format!(
+                    "\t> {name} ({count}x)",
+                    name = name,
+                    count = generated_entities_stats[&pattern.name]
+                )
+                .as_str(),
+            );
+            log_string.push_str("\n\t  ");
+            log_string.push_str("-".repeat(name.len()).as_str());
+            log_string.push_str("\n");
+
+            for row in &pattern.cells {
+                let mut row_string: String = "".to_owned();
+
+                row.iter().for_each(|cell| {
+                    row_string.push_str(match (*cell).into() {
+                        Cell::Dead => " · ",
+                        Cell::Alive => " ■ ",
+                        _ => " ",
+                    });
+                });
+
+                log_string.push_str(format!("\t\t{row}\n", row = row_string).as_str());
+            }
+
+            console_log(log_string.as_str());
+        }
+    }
+
+    pub fn bind_js_cells_instanced_mesh(&mut self, js_mesh_ref: JsValue, cell_color_lut: JsValue) {
+        self.js_cells_instanced_mesh = RefCell::new(js_mesh_ref);
+        self.set_cells_im_matrix_color_at = js_sys::Reflect::get(
+            &self.js_cells_instanced_mesh.borrow(),
+            &JsValue::from_str("setColorAt"),
+        )
+        .unwrap()
+        .into();
+        self.cells_im_matrix_instance_color = js_sys::Reflect::get(
+            &self.js_cells_instanced_mesh.borrow(),
+            &JsValue::from_str("instanceColor"),
+        )
+        .unwrap();
+        self.cell_color_lut = RefCell::new(cell_color_lut);
     }
 
     pub fn morph_map_next_round(&mut self) {
@@ -210,15 +279,31 @@ impl Map {
                 }
 
                 // update the processed cell state
-                self.map[index] = match (previous_cell.into(), count) {
-                    (Cell::Alive, x) if x < 2 => Cell::Vanishing,
+                let new_value = match (previous_cell.into(), count) {
+                    (Cell::Alive, x) if x < 2 || x > 3 => Cell::Vanishing1,
                     (Cell::Alive, 2) | (Cell::Alive, 3) => Cell::Alive,
-                    (Cell::Alive, x) if x > 3 => Cell::Vanishing,
-                    (Cell::Dead, 3) => Cell::Alive,
-                    (Cell::Vanishing, _) => Cell::Dead,
+                    (cell, 3) if cell != Cell::Alive => Cell::Alive,
+                    (Cell::Vanishing3, _) => Cell::Dead,
+                    (Cell::Vanishing2, _) => Cell::Vanishing3,
+                    (Cell::Vanishing1, _) => Cell::Vanishing2,
                     (other, _) => other,
                 } as u8;
+                self.map[index] = new_value;
+
+                match self.set_cells_im_matrix_color_at.call2(&self.js_cells_instanced_mesh.borrow(), &JsValue::from(index), &js_sys::Reflect::get(&self.cell_color_lut.borrow(), &JsValue::from(new_value)).unwrap()) {
+                    Ok(_) => (),
+                    Err(_) => panic!("Error calling instancedMesh.setColorAt for index {index} and value {value}", index=index, value=new_value)
+                }
             }
+        }
+
+        match js_sys::Reflect::set(
+            &self.cells_im_matrix_instance_color,
+            &JsValue::from_str("needsUpdate"),
+            &JsValue::from(true),
+        ) {
+            Ok(_) => (),
+            Err(_) => panic!("Error setting instancedMesh.instanceColor.needsUpdate"),
         }
     }
 

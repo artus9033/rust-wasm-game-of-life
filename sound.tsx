@@ -50,29 +50,39 @@ export function startSoundContext(bDisableLooping: boolean = true) {
 	}
 }
 
-export function useTonePlayer(maxTones: number, soundEnabled: boolean) {
+export enum SynthVoice {
+	DUO_SYNTH,
+	FM_SYNTH,
+}
+
+export function useTonePlayer(maxTones: number, soundEnabled: boolean, synthVoice: SynthVoice) {
 	const _synthRef = useRef<Tone.PolySynth | null>(null);
+	const _lastSynthVoiceRef = useRef<SynthVoice | null>(null);
 
 	const synth = useMemo(() => {
 		let justCreated = false;
 
-		if (!_synthRef.current) {
-			_synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
-				volume: -32,
-				portamento: 0.005,
-			});
+		if (!_synthRef.current || _lastSynthVoiceRef.current !== synthVoice) {
+			_synthRef.current = new Tone.PolySynth(
+				(synthVoice === SynthVoice.DUO_SYNTH ? Tone.DuoSynth : Tone.FMSynth) as any,
+				{
+					volume: -24,
+					portamento: 0.005,
+				},
+			);
 
+			_lastSynthVoiceRef.current = synthVoice;
 			justCreated = true;
 		}
 
-		_synthRef.current.maxPolyphony = maxTones;
+		_synthRef.current.maxPolyphony = maxTones * 2; // double the tones to mix last + new notes together
 
 		if (justCreated) {
 			_synthRef.current.toDestination();
 		}
 
 		return _synthRef.current;
-	}, [maxTones]);
+	}, [maxTones, synthVoice]);
 
 	return (map: WasmGameLogicType.Map, notesDuration: number) => {
 		if (!soundEnabled) return;
@@ -110,7 +120,7 @@ export function useTonePlayer(maxTones: number, soundEnabled: boolean) {
 			}
 
 			if (Tone.Transport.state === "started") {
-				synth.triggerAttackRelease(notesGrid.flat(), notesDuration, Tone.now(), 1);
+				synth.triggerAttackRelease(notesGrid.flat(), notesDuration / 1000);
 			}
 
 			return notesGrid;

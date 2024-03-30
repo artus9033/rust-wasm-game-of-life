@@ -2,7 +2,9 @@ import { boundMethod } from "autobind-decorator";
 import React from "react";
 import type { Frequency } from "tone/build/esm/core/type/Units";
 
+import { VolumeOff } from "@mui/icons-material";
 import {
+	Alert,
 	Container,
 	Stack,
 	Table,
@@ -38,7 +40,7 @@ class SoundGridVisualizerRaw extends React.Component<
 	};
 
 	@boundMethod
-	public updateNotesGrid(newNotesGrid: Array<Array<Frequency>>) {
+	public updateNotesGrid(newNotesGrid: Array<Array<Frequency>> | null) {
 		this.setState({
 			notesGrid: newNotesGrid,
 		});
@@ -47,6 +49,15 @@ class SoundGridVisualizerRaw extends React.Component<
 	render() {
 		return (
 			<Stack>
+				{!this.state.notesGrid?.length && (
+					<Container maxWidth="sm">
+						<Alert icon={<VolumeOff fontSize="inherit" />} severity="warning">
+							To show something here, enable sound in the floating options window and
+							turn up the sound.
+						</Alert>
+					</Container>
+				)}
+
 				<TableContainer component={CustomContainer}>
 					<Table
 						style={{

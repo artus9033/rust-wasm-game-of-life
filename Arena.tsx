@@ -26,8 +26,7 @@ import useWindowSize from "../hooks/useWindowSize";
 import Cells from "./Cells";
 import SoundGridVisualizer from "./SoundGridVisualizer";
 import Stats from "./Stats";
-import { CANVAS_UNIT, threeColorBlack, threeColorWhite } from "./gameConstants";
-import { startSoundContext } from "./sound";
+import { SynthVoice, startSoundContext } from "./sound";
 import { Size2D } from "./types";
 
 const AUTOPLAY_DOCS_URL = "https://developer.chrome.com/blog/autoplay";
@@ -36,7 +35,8 @@ const LONG_HOVER_MS = 1000;
 export type ArenaProps = {
 	darkMode: boolean;
 	containerRef: RefObject<HTMLElement>;
-	roundDeltaSecondsDefault?: number;
+	cellEdgeSizePxDefault?: number;
+	fpsDefault?: number;
 	soundEnabledDefault?: boolean;
 	maxTonesDefault?: number;
 	motionAnimStaggered?: boolean;
@@ -55,15 +55,21 @@ export type ArenaProps = {
 	  }
 );
 
+const SynthVoiceChoices: Record<string, SynthVoice> = {
+	"Space (Duo Synth)": SynthVoice.DUO_SYNTH,
+	"Keyboard (FM Synth)": SynthVoice.FM_SYNTH,
+};
+
 const Arena = memo(
 	({
 		darkMode,
 		containerRef,
 		stats = false,
 		statsClassName,
-		roundDeltaSecondsDefault = 0.2,
+		cellEdgeSizePxDefault = 8,
+		fpsDefault = 15,
 		soundEnabledDefault = true,
-		maxTonesDefault = 2,
+		maxTonesDefault = 1,
 		motionAnimStaggered = false,
 		soundGridVisualizerRef,
 		gui = false,
@@ -78,32 +84,44 @@ const Arena = memo(
 
 		const autoplayDocsLinkLongHoverTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-		const { "Round period (seconds)": roundDeltaSecondsSuffixed } = useControls(
+		const { "Speed [fps]": fps, "Cell edge [px]": cellEdgeSizePx } = useControls(
 			"Game logic",
 			{
-				"Round period (seconds)": {
-					value: roundDeltaSecondsDefault,
-					min: 0,
-					max: 2,
-					suffix: "s",
+				"Speed [fps]": {
+					value: fpsDefault,
+					min: 1 / 4,
+					max: 244,
+					step: 0.25,
+					label: "Speed [fps]",
+				},
+				"Cell edge [px]": {
+					value: cellEdgeSizePxDefault,
+					min: 3,
+					max: 32,
+					step: 1,
+					label: "Cell edge [px]",
 				},
 			},
 			{ order: 1 },
 		);
 
-		const roundDeltaSeconds = useMemo(
-			() => Number(String(roundDeltaSecondsSuffixed).replace("s", "")),
-			[roundDeltaSecondsSuffixed],
-		);
-
-		const { "Sound enabled": soundEnabled, "Max polyphonic tones": maxTones } = useControls(
+		const {
+			"Sound enabled": soundEnabled,
+			"Polyphony size": maxTones,
+			"Synth voice": synthVoice,
+		} = useControls(
 			"Sound synthesization",
 			{
 				"Sound enabled": {
 					value: soundEnabledDefault,
 					type: LevaInputs.BOOLEAN,
 				},
-				"Max polyphonic tones": {
+				"Synth voice": {
+					value: SynthVoice.DUO_SYNTH,
+					options: SynthVoiceChoices,
+					type: LevaInputs.SELECT,
+				},
+				"Polyphony size": {
 					value: maxTonesDefault,
 					min: 0,
 					max: 32,
@@ -112,6 +130,13 @@ const Arena = memo(
 			},
 			{ order: 2 },
 		);
+
+		// re-generate map on cell edge size change
+		// the map needs to be re-generated after this property changes,
+		// otherwise it will be zoomed in or out since it will be of too small size or too large size
+		useEffect(() => {
+			setRegenerateMapFlag(_.uniqueId());
+		}, [cellEdgeSizePx]);
 
 		// onChangeSoundEnabled effect
 		useEffect(() => {
@@ -162,8 +187,8 @@ const Arena = memo(
 					);
 
 				setCanvasSize({
-					width: newWidth / CANVAS_UNIT,
-					height: newHeight / CANVAS_UNIT,
+					width: newWidth / cellEdgeSizePx,
+					height: newHeight / cellEdgeSizePx,
 				});
 
 				if (canvasRef.current) {
@@ -181,7 +206,7 @@ const Arena = memo(
 			updateSize();
 
 			return () => window.removeEventListener("resize", updateSize);
-		}, []);
+		}, [cellEdgeSizePx]);
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		useEffect(
@@ -216,10 +241,11 @@ const Arena = memo(
 		useEffect(
 			() => {
 				if (Tone.Transport.state !== "started" && !mountClickForSoundFlagRef.current) {
-					enqueueSnackbar("Click the game to enable sound", {
-						variant: "info",
-						autoHideDuration: 7000,
-					});
+					if (showSoundAvailabilityStatusWarning)
+						enqueueSnackbar("Click the game to enable sound", {
+							variant: "info",
+							autoHideDuration: 7000,
+						});
 
 					setSoundAvailable(false);
 
@@ -235,7 +261,9 @@ const Arena = memo(
 		const cells = (
 			<Cells
 				regenerateMapFlag={regenerateMapFlag}
-				roundDeltaSeconds={roundDeltaSeconds}
+				cellEdgeSizePx={cellEdgeSizePx}
+				fps={fps}
+				synthVoice={synthVoice}
 				soundEnabled={soundEnabled}
 				maxTones={maxTones}
 				canvasSize={canvasSize}
@@ -251,9 +279,10 @@ const Arena = memo(
 
 				// @ts-ignore: this property actually changes here (or at least it should if the operation was successful)
 				if (Tone.Transport.state === "started") {
-					enqueueSnackbar("Sound is now available", {
-						variant: "success",
-					});
+					if (showSoundAvailabilityStatusWarning)
+						enqueueSnackbar("Sound is now available", {
+							variant: "success",
+						});
 
 					setSoundAvailable(true);
 					setReRenderFlag(!reRenderFlag); // the component won't re-render automatically, as no state/prop/hook change
@@ -263,7 +292,7 @@ const Arena = memo(
 					});
 				}
 			}
-		}, [enqueueSnackbar, reRenderFlag]);
+		}, [enqueueSnackbar, reRenderFlag, showSoundAvailabilityStatusWarning]);
 
 		return (
 			<>
@@ -349,16 +378,20 @@ const Arena = memo(
 							style={{ position: "absolute" }}
 							orthographic
 							camera={{
-								// scale: new THREE.Vector3(1, -1, 1),
-								position: new THREE.Vector3(0, 0, 100),
+								position: new THREE.Vector3(0, 0, 0),
 								zoom: 1,
 							}}
+							frameloop="never"
 							key={aspect}
 							ref={canvasRef}
 						>
 							<color
 								attach="background"
-								args={[darkMode ? threeColorBlack : threeColorWhite]}
+								args={[
+									darkMode
+										? new THREE.Color(0, 0, 0)
+										: new THREE.Color(255, 255, 255),
+								]}
 							/>
 
 							{cells}

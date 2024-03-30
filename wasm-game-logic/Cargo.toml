@@ -16,6 +16,8 @@ wasm-bindgen = "0.2.63"
 rand = "0.8.4"
 getrandom = { version = "0.2", features = ["js"] }
 once_cell = "1.8.0"
+js-sys = "0.3.69"
+lazy_static = "1.3.0"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires

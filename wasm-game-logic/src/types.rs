@@ -6,14 +6,19 @@ use wasm_bindgen::prelude::*;
 pub enum Cell {
     Dead = 0,
     Alive = 1,
-    Vanishing = 2
+    Vanishing1 = 2,
+    Vanishing2 = 3,
+    Vanishing3 = 4,
 }
 
 impl std::convert::Into<Cell> for u8 {
     fn into(self) -> Cell {
         match self {
+            0 => Cell::Dead,
             1 => Cell::Alive,
-            _ => Cell::Dead,
+            2 => Cell::Vanishing1,
+            3 => Cell::Vanishing2,
+            _ => Cell::Vanishing3,
         }
     }
 }

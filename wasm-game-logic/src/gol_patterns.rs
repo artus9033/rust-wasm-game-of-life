@@ -1,4 +1,4 @@
-use crate::{console_log, tagged_console_log, types::*};
+use crate::types::*;
 use once_cell::sync::Lazy;
 use rand::distributions::WeightedIndex;
 use rand::prelude::*;
@@ -27,9 +27,7 @@ impl Pattern {
     }
 }
 
-static PATTERNS: Lazy<Vec<Pattern>> = Lazy::new(|| {
-    tagged_console_log("The following game of life entity templates will be used:\n");
-
+pub static PATTERNS: Lazy<Vec<Pattern>> = Lazy::new(|| {
     let patterns: Vec<Pattern> = [
         // blinker
         Pattern::new(
@@ -155,34 +153,6 @@ static PATTERNS: Lazy<Vec<Pattern>> = Lazy::new(|| {
         cells: add_safety_border(&pattern),
     })
     .collect();
-
-    for pattern in patterns.iter() {
-        let mut log_string: String = "".to_owned();
-
-        let name = &*pattern.name;
-        log_string.push_str(format!("\t> {name}", name = name).as_str());
-        log_string.push_str("\n\t  ");
-        log_string.push_str("-".repeat(name.len()).as_str());
-        log_string.push_str("\n");
-
-        for row in &pattern.cells {
-            let mut row_string: String = "".to_owned();
-            
-            row.iter().for_each(
-                |cell| {
-                    row_string.push_str(match (*cell).into() {
-                        Cell::Dead => " ",
-                        Cell::Alive => "⏺",
-                        _ => " ",
-                    });
-                }
-            );
-
-            log_string.push_str(format!("\t\t{row}\n", row = row_string).as_str());
-        }
-
-        console_log(log_string.as_str());
-    }
 
     patterns
 });
