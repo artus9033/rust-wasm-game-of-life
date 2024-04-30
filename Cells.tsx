@@ -112,14 +112,14 @@ const Cells = memo(
 							[CellEnum.Vanishing2]: new THREE.Color(0x222222),
 							[CellEnum.Vanishing3]: new THREE.Color(0x080808),
 							[CellEnum.Dead]: new THREE.Color(0x000000),
-					  }
+						}
 					: {
 							[CellEnum.Alive]: new THREE.Color(0x000000),
 							[CellEnum.Vanishing1]: new THREE.Color(0xbebebe),
 							[CellEnum.Vanishing2]: new THREE.Color(0xd3d3d3),
 							[CellEnum.Vanishing3]: new THREE.Color(0xe8e8e8),
 							[CellEnum.Dead]: new THREE.Color(0xffffff),
-					  },
+						},
 			[darkMode],
 		);
 
@@ -132,7 +132,6 @@ const Cells = memo(
 			() => (canvasSize ? Math.floor(canvasSize.width) * Math.floor(canvasSize.height) : 0),
 			[canvasSize],
 		);
-		console.log("?", canvasSize);
 
 		useOnMountOnce(() => {
 			(async () => {
@@ -154,10 +153,21 @@ const Cells = memo(
 		const maybePrepareWebGLScene = useCallback(
 			(bSilent: boolean) => {
 				if (map.current && cellsInstancedMesh.current) {
-					if (!bSilent)
+					if (!bSilent) {
+						let entitiesCount = Math.round(canvasSize!.width * canvasSize!.height);
+
 						console.log(
-							"[Game of Life - Cells] Preparing WebGL scene: setting up colors and transforms",
+							`[Game of Life - Cells] Preparing WebGL scene: setting up colors and transforms on map of size ${
+								canvasSize!.width
+							} entities (${canvasSize!.width * cellEdgeSizePx} px^2) x ${
+								canvasSize!.height
+							} entities (${
+								canvasSize!.height * cellEdgeSizePx
+							} px^2) => ${entitiesCount} entities^2 = ${
+								entitiesCount * cellEdgeSizePx ** 2
+							} px^2`,
 						);
+					}
 
 					// the below is needed to ensure that instanceColor property will be generated (without this call,
 					// THREE.js will leave the property with null value, which will cause a runtime error later)
@@ -193,7 +203,7 @@ const Cells = memo(
 					if (!bSilent) console.log("[Game of Life - Cells] WebGL scene prepared");
 				}
 			},
-			[canvasSize, CELL_COLORS_LUT, calculateTransform],
+			[canvasSize, CELL_COLORS_LUT, calculateTransform, cellEdgeSizePx],
 		);
 
 		// map setup effect
