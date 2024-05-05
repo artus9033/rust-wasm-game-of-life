@@ -261,15 +261,15 @@ impl Map {
                 count = 0; // reset the count for this loop
                 let previous_cell = self.previous_map[index];
 
-                for iy in utils::max(0, (y - 1) as usize)
-                    ..=utils::min((self.height - 1) as usize, (y + 1) as usize)
+                for iy in utils::max(0i32, y as i32 - 1)
+                    ..=utils::min(self.height as i32 - 1, y as i32 + 1)
                 {
-                    for ix in utils::max(0, (x - 1) as usize)
-                        ..=utils::min((self.width - 1) as usize, (x + 1) as usize)
+                    for ix in utils::max(0, x as i32 - 1)
+                        ..=utils::min(self.width as i32 - 1, x as i32 + 1)
                     {
-                        let iter_cell = self.previous_map[self.get_index_for_coordinates(iy, ix)];
+                        let iter_cell = self.previous_map[self.get_index_for_coordinates(iy as usize, ix as usize)];
 
-                        if !(ix == x as usize && iy == y as usize) // check if this is not the currently processed cell
+                        if !(ix as usize == x && iy as usize == y) // check if this is not the currently processed cell
                             && iter_cell == Cell::Alive as u8
                         {
                             // count for GoL cell state update
