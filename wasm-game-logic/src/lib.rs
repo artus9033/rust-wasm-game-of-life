@@ -267,7 +267,8 @@ impl Map {
                     for ix in utils::max(0, x as i32 - 1)
                         ..=utils::min(self.width as i32 - 1, x as i32 + 1)
                     {
-                        let iter_cell = self.previous_map[self.get_index_for_coordinates(iy as usize, ix as usize)];
+                        let iter_cell = self.previous_map
+                            [self.get_index_for_coordinates(iy as usize, ix as usize)];
 
                         if !(ix as usize == x && iy as usize == y) // check if this is not the currently processed cell
                             && iter_cell == Cell::Alive as u8
@@ -290,7 +291,14 @@ impl Map {
                 } as u8;
                 self.map[index] = new_value;
 
-                match self.set_cells_im_matrix_color_at.call2(&self.js_cells_instanced_mesh.borrow(), &JsValue::from(index), &js_sys::Reflect::get(&self.cell_color_lut.borrow(), &JsValue::from(new_value)).unwrap()) {
+                match self.set_cells_im_matrix_color_at.call2(
+                    &self.js_cells_instanced_mesh.borrow(),
+                    &JsValue::from(index),
+                    &js_sys::Reflect::get(
+                        &self.cell_color_lut.borrow(),
+                        &JsValue::from(new_value)
+                    ).unwrap()
+                ) {
                     Ok(_) => (),
                     Err(_) => panic!("Error calling instancedMesh.setColorAt for index {index} and value {value}", index=index, value=new_value)
                 }
