@@ -10,7 +10,7 @@ import {
 	CircularProgress,
 	Collapse,
 	Container,
-	Grid,
+	Grid2 as Grid,
 	Link,
 	Typography,
 	useMediaQuery,
