@@ -27,6 +27,24 @@ Lastly, this implementation features a dynamic, weighted-pseudorandom map (unive
 
 Technical details is described on [the GoL page on my website](https://artus9033.now.sh/game-of-life).
 
+## Basic usage
+
+The basic usage (e.g. without intercepting changes to the sound grid) is as follows:
+
+````tsx
+<Arena
+    darkMode={true}
+    containerRef={containerRef}
+    cellEdgeSizePxDefault={5}
+    fpsDefault={15}
+    soundEnabledDefault={true}
+    showSoundAvailabilityStatusWarning
+    stats
+    gui
+/>
+```
+
 ## License
 
 This code is provided under the MIT License, see [LICENSE](./LICENSE).
+````
