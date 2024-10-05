@@ -4,7 +4,7 @@ import * as Tone from "tone";
 import type { Frequency } from "tone/build/esm/core/type/Units";
 import type WasmGameLogicType from "wasm-game-logic/wasm_game_logic";
 
-export const MAJOR_PENTATONIC = [
+const MAJOR_PENTATONIC = [
 	"C6",
 	"A5",
 	"G5",
@@ -23,7 +23,7 @@ export const MAJOR_PENTATONIC = [
 	"C3",
 ];
 
-export const MINOR_PENTATONIC = [
+const MINOR_PENTATONIC = [
 	"C6",
 	"A#5",
 	"G5",

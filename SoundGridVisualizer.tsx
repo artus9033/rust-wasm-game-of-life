@@ -108,12 +108,10 @@ class SoundGridVisualizerRaw extends React.Component<
 	}
 }
 
-const WithThemeSoundGridVisualizer = React.forwardRef<SoundGridVisualizerRaw>((props, ref) => {
+const SoundGridVisualizer = React.forwardRef<SoundGridVisualizerRaw>((_props, ref) => {
 	const theme = useTheme();
 
 	return <SoundGridVisualizerRaw theme={theme} ref={ref} />;
 });
-
-export const SoundGridVisualizer = WithThemeSoundGridVisualizer;
 
 export default SoundGridVisualizer;
