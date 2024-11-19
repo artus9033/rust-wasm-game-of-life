@@ -350,6 +350,8 @@ const Arena = memo(
 						height: "70vh",
 						cursor: soundAvailable ? undefined : "pointer",
 						width: "100%",
+						display: "flex",
+						flex: 1,
 					}}
 					onClick={activateSound}
 				>
@@ -373,7 +375,16 @@ const Arena = memo(
 						hidden={!gui}
 					/>
 
-					<MotionFader key={aspect} staggered={motionAnimStaggered}>
+					<MotionFader
+						key={aspect}
+						staggered={motionAnimStaggered}
+						motionProps={{
+							style: {
+								display: "flex",
+								flex: 1,
+							},
+						}}
+					>
 						<Canvas
 							style={{ position: "absolute" }}
 							orthographic
