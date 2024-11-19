@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as Tone from "tone";
 import type { Frequency } from "tone/build/esm/core/type/Units";
 import type WasmGameLogicType from "wasm-game-logic/wasm_game_logic";
@@ -43,10 +43,10 @@ const MINOR_PENTATONIC = [
 ];
 
 export function startSoundContext(bDisableLooping: boolean = true) {
-	if (bDisableLooping) Tone.Transport.loop = false;
+	if (bDisableLooping) Tone.getTransport().loop = false;
 
-	if (Tone.Transport.state !== "started") {
-		Tone.Transport.start();
+	if (Tone.getTransport().state !== "started") {
+		Tone.getTransport().start();
 	}
 }
 
@@ -58,11 +58,17 @@ export enum SynthVoice {
 export function useTonePlayer(maxTones: number, soundEnabled: boolean, synthVoice: SynthVoice) {
 	const _synthRef = useRef<Tone.PolySynth | null>(null);
 	const _lastSynthVoiceRef = useRef<SynthVoice | null>(null);
+	const previousNotesRef = useRef<Frequency[]>([]);
 
 	const synth = useMemo(() => {
 		let justCreated = false;
 
 		if (!_synthRef.current || _lastSynthVoiceRef.current !== synthVoice) {
+			if (_synthRef.current) {
+				_synthRef.current.releaseAll();
+				_synthRef.current.dispose();
+			}
+
 			_synthRef.current = new Tone.PolySynth(
 				(synthVoice === SynthVoice.DUO_SYNTH ? Tone.DuoSynth : Tone.FMSynth) as any,
 				{
@@ -83,6 +89,13 @@ export function useTonePlayer(maxTones: number, soundEnabled: boolean, synthVoic
 
 		return _synthRef.current;
 	}, [maxTones, synthVoice]);
+
+	useEffect(() => {
+		return () => {
+			_synthRef.current?.releaseAll();
+			_synthRef.current?.dispose();
+		};
+	}, []);
 
 	return (map: WasmGameLogicType.Map, notesDuration: number) => {
 		if (!soundEnabled) return;
@@ -119,8 +132,13 @@ export function useTonePlayer(maxTones: number, soundEnabled: boolean, synthVoic
 				if (notesThisRow.length) notesGrid.push(notesThisRow);
 			}
 
-			if (Tone.Transport.state === "started") {
-				synth.triggerAttackRelease(notesGrid.flat(), notesDuration / 1000);
+			if (Tone.getTransport().state === "started") {
+				const newNotes = notesGrid.flat();
+
+				synth.triggerRelease(previousNotesRef.current, 0);
+				synth.triggerAttack(newNotes, notesDuration / 1000);
+
+				previousNotesRef.current = newNotes;
 			}
 
 			return notesGrid;

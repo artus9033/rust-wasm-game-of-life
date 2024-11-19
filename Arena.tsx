@@ -117,7 +117,7 @@ const Arena = memo(
 					type: LevaInputs.BOOLEAN,
 				},
 				"Synth voice": {
-					value: SynthVoice.DUO_SYNTH,
+					value: SynthVoice.FM_SYNTH,
 					options: SynthVoiceChoices,
 					type: LevaInputs.SELECT,
 				},
