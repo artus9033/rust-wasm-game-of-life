@@ -1,7 +1,6 @@
+import { addAfterEffect, addEffect } from "@react-three/fiber";
 import { RefObject, useEffect, useState } from "react";
 import StatsImpl from "stats.js";
-
-import { addAfterEffect, addEffect } from "@react-three/fiber";
 
 function Stats({
 	showPanel = 0,

@@ -1,10 +1,3 @@
-import { Leva, LevaInputs, button, useControls } from "leva";
-import _ from "lodash";
-import { useSnackbar } from "notistack";
-import React, { RefObject, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import * as THREE from "three";
-import * as Tone from "tone";
-
 import {
 	Alert,
 	CircularProgress,
@@ -18,6 +11,12 @@ import {
 } from "@mui/material";
 import { Canvas } from "@react-three/fiber";
 import { useHover } from "@uidotdev/usehooks";
+import { Leva, LevaInputs, button, useControls } from "leva";
+import _ from "lodash";
+import { useSnackbar } from "notistack";
+import React, { RefObject, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import * as THREE from "three";
+import * as Tone from "tone";
 
 import MotionFader from "../components/animations/MotionFader";
 import UniversalLink from "../components/misc/UniversalLink";

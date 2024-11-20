@@ -1,18 +1,17 @@
+import { useFrame, useThree } from "@react-three/fiber";
 import _ from "lodash";
 import dynamic from "next/dynamic";
 import React, { RefObject, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Frequency } from "tone/build/esm/core/type/Units";
-import type * as WasmGameLogicType from "./wasm-game-logic/pkg";
-import { Cell as CellEnum } from "./wasm-game-logic/pkg";
-
-import { useFrame, useThree } from "@react-three/fiber";
 
 import SoundGridVisualizer from "./SoundGridVisualizer";
 import { SYNTH_ATTACK_MINIMUM_DURATION_MS } from "./gameConstants";
 import { useOnMountOnce } from "./hooks/useOnMountOnce";
 import { SynthVoice, useTonePlayer } from "./sound";
 import { Size2D } from "./types";
+import type * as WasmGameLogicType from "./wasm-game-logic/pkg";
+import { Cell as CellEnum } from "./wasm-game-logic/pkg";
 
 export type CellsProps = {
 	canvasSize?: Size2D;
