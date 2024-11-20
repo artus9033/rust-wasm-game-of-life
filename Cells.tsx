@@ -3,8 +3,8 @@ import dynamic from "next/dynamic";
 import React, { RefObject, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Frequency } from "tone/build/esm/core/type/Units";
-import type WasmGameLogicType from "wasm-game-logic/wasm_game_logic";
-import { Cell as CellEnum } from "wasm-game-logic/wasm_game_logic";
+import type * as WasmGameLogicType from "./wasm-game-logic/pkg";
+import { Cell as CellEnum } from "./wasm-game-logic/pkg";
 
 import { useFrame, useThree } from "@react-three/fiber";
 
@@ -135,7 +135,7 @@ const Cells = memo(
 
 		useOnMountOnce(() => {
 			(async () => {
-				setWASMGameLogic(await import("wasm-game-logic/wasm_game_logic.js"));
+				setWASMGameLogic(await import("./wasm-game-logic/pkg"));
 
 				setIsWASMReady(true);
 			})();

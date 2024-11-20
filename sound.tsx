@@ -1,8 +1,7 @@
 import _ from "lodash";
 import { useEffect, useMemo, useRef } from "react";
 import * as Tone from "tone";
-import type { Frequency } from "tone/build/esm/core/type/Units";
-import type WasmGameLogicType from "wasm-game-logic/wasm_game_logic";
+import type * as WasmGameLogicType from "./wasm-game-logic/pkg";
 
 const MAJOR_PENTATONIC = [
 	"C6",
@@ -58,7 +57,7 @@ export enum SynthVoice {
 export function useTonePlayer(maxTones: number, soundEnabled: boolean, synthVoice: SynthVoice) {
 	const _synthRef = useRef<Tone.PolySynth | null>(null);
 	const _lastSynthVoiceRef = useRef<SynthVoice | null>(null);
-	const previousNotesRef = useRef<Frequency[]>([]);
+	const previousNotesRef = useRef<Tone.Unit.Frequency[]>([]);
 
 	const synth = useMemo(() => {
 		let justCreated = false;
@@ -109,10 +108,10 @@ export function useTonePlayer(maxTones: number, soundEnabled: boolean, synthVoic
 			const nRows = Math.ceil((maxTones + musicGridSizeX - 1) / musicGridSizeX),
 				musicGridSizeY = Math.round(map.height / nRows);
 
-			const notesGrid: Array<Array<Frequency>> = [];
+			const notesGrid: Array<Array<Tone.Unit.Frequency>> = [];
 
 			for (let gy = 0; gy < nRows; gy++) {
-				const notesThisRow: Frequency[] = [];
+				const notesThisRow: Tone.Unit.Frequency[] = [];
 
 				for (let gx = 0; gx < nCells; gx++) {
 					const sum = map.current_map_subgrid_sum(gx, gy, musicGridSizeX, musicGridSizeY);

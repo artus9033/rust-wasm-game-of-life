@@ -172,7 +172,10 @@ const Arena = memo(
 		const [isWASMReady, setIsWASMReady] = useState<boolean>(false);
 		const [regenerateMapFlag, setRegenerateMapFlag] = useState<string>(_.uniqueId());
 		const [canvasSize, setCanvasSize] = useState<Size2D | undefined>(undefined);
-		const [levaPosition, setLevaPosition] = useState<{ x?: number; y?: number }>({
+		const [levaPosition, setLevaPosition] = useState<{
+			x?: number;
+			y?: number;
+		}>({
 			x: undefined,
 			y: undefined,
 		});
