@@ -1,5 +1,5 @@
-import _ from "lodash";
 import { useEffect, useMemo, useRef } from "react";
+
 import * as Tone from "tone";
 
 import type * as WasmGameLogicType from "./wasm-game-logic/pkg";

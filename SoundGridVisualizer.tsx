@@ -1,6 +1,4 @@
-import { boundMethod } from "autobind-decorator";
 import React from "react";
-import type { Frequency } from "tone/build/esm/core/type/Units";
 
 import { VolumeOff } from "@mui/icons-material";
 import {
@@ -16,6 +14,9 @@ import {
 	Theme,
 	useTheme,
 } from "@mui/material";
+
+import { boundMethod } from "autobind-decorator";
+import type { Frequency } from "tone/build/esm/core/type/Units";
 
 import { synthesizeFreq } from "./chromestesia";
 

@@ -1,7 +1,9 @@
+import React, { RefObject, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { useFrame, useThree } from "@react-three/fiber";
+
 import _ from "lodash";
 import dynamic from "next/dynamic";
-import React, { RefObject, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Frequency } from "tone/build/esm/core/type/Units";
 
@@ -47,6 +49,7 @@ const Cells = memo(
 
 		const playTone = useTonePlayer(maxTones, soundEnabled, synthVoice);
 
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const [_reRenderFlag, setReRenderFlag] = useState<string>(_.uniqueId());
 		const [wasmGameLogic, setWASMGameLogic] = useState<typeof WasmGameLogicType | null>(null);
 
@@ -133,9 +136,10 @@ const Cells = memo(
 		);
 
 		useOnMountOnce(() => {
-			(async () => {
+			void (async () => {
 				setWASMGameLogic(await import("./wasm-game-logic/pkg"));
 
+				// eslint-disable-next-line @typescript-eslint/no-floating-promises
 				setIsWASMReady(true);
 			})();
 		});
@@ -291,6 +295,7 @@ const Cells = memo(
 
 						maybePrepareWebGLScene(false);
 					}}
+					// eslint-disable-next-line react/no-unknown-property
 					args={[
 						boxGeometry,
 						new THREE.MeshBasicMaterial({

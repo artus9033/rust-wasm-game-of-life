@@ -1,5 +1,7 @@
-import { addAfterEffect, addEffect } from "@react-three/fiber";
 import { RefObject, useEffect, useState } from "react";
+
+import { addAfterEffect, addEffect } from "@react-three/fiber";
+
 import StatsImpl from "stats.js";
 
 function Stats({

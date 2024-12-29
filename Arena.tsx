@@ -1,3 +1,5 @@
+import React, { RefObject, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import {
 	Alert,
 	CircularProgress,
@@ -11,10 +13,10 @@ import {
 } from "@mui/material";
 import { Canvas } from "@react-three/fiber";
 import { useHover } from "@uidotdev/usehooks";
+
 import { Leva, LevaInputs, button, useControls } from "leva";
 import _ from "lodash";
 import { useSnackbar } from "notistack";
-import React, { RefObject, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import * as Tone from "tone";
 
@@ -399,7 +401,9 @@ const Arena = memo(
 							ref={canvasRef}
 						>
 							<color
+								// eslint-disable-next-line react/no-unknown-property
 								attach="background"
+								// eslint-disable-next-line react/no-unknown-property
 								args={[
 									darkMode
 										? new THREE.Color(0, 0, 0)
