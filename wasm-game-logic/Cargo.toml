@@ -20,7 +20,7 @@ debug = ["console_error_panic_hook"]
 # be set to an array of strings which are explicit arguments to pass to
 # `wasm-opt`. For example `['-Os']` would optimize for size while `['-O4']`
 # would execute very expensive optimizations passes
-wasm-opt = ['-O4']
+wasm-opt = ['-O4', '--enable-bulk-memory', '--enable-nontrapping-float-to-int']
 
 [package.metadata.wasm-pack.profile.dev.wasm-bindgen]
 # Should we enable wasm-bindgen's debug assertions in its generated JS glue?
