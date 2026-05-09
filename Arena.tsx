@@ -347,7 +347,6 @@ const Arena = memo(
 						</Container>
 					</MotionFader>
 				)}
-
 				<div
 					style={{
 						position: "relative",
@@ -418,14 +417,16 @@ const Arena = memo(
 
 						{!isWASMReady && (
 							<Grid
-								justifyContent="center"
 								container
-								direction="column"
-								display="flex"
 								style={{
 									position: "relative",
 									height: "70vh",
 									width: "100%",
+								}}
+								sx={{
+									justifyContent: "center",
+									display: "flex",
+									direction: "column",
 								}}
 							>
 								<CircularProgress style={{ alignSelf: "center" }} size="3.5rem" />
